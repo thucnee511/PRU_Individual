@@ -1,0 +1,117 @@
+Chức năng chính:
+
+* Nhân vật di chuyển (left, right, jump, double jump):
+
+private void Movement()
+{
+        anim.SetBool("isRunning", false);
+        if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow))
+        {
+            anim.SetBool("isRunning", true);
+            transform.position += new Vector3(1, 0, 0) * Time.deltaTime * 3;
+            if (!facingRight)
+            {
+                transform.Rotate(0, 180, 0);
+                facingRight = true;
+            }
+        }
+        if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow))
+        {
+            anim.SetBool("isRunning", true);
+            transform.position += new Vector3(-1, 0, 0) * Time.deltaTime * 3;
+            if (facingRight)
+            {
+                transform.Rotate(0, 180, 0);
+                facingRight = false;
+            }
+        }
+        if (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.Space))
+        {
+            if (isGrounded)
+            {
+                rb.AddForce(new Vector2(0, 250));
+                isGrounded = false;
+                anim.SetBool("isJumping", true);
+            }
+            //double jump
+            if (!isGrounded && rb.velocity.y < 0 && !isDoubleJumping)
+            {
+                rb.velocity = new Vector2(rb.velocity.x, 0);
+                rb.AddForce(new Vector2(0, 250));
+                isDoubleJumping = true;
+                anim.SetBool("isDoubleJumping", true);
+            }
+        }
+        //after jump to the highest point
+        if (rb.velocity.y < 0)
+        {
+            anim.SetBool("isDoubleJumping", false);
+            anim.SetBool("isJumping", false);
+            anim.SetBool("isFalling", true);
+        }
+}
+
+* Quái chase người chơi khi người chơi di chuyển vào tầm
+
+	if (Player != null)
+            {
+                var playerX = Player.transform.position.x;
+                if (playerX >= Start && playerX <= End)
+                {
+                    if (playerX > slimePosition)
+                    {
+                        facingLeft = false;
+                    }
+                    if (playerX < slimePosition)
+                    {
+                        facingLeft = true;
+                    }
+                }
+            }
+
+* cộng điểm khi ăn trái cây 
+
+private void CollectItem(Collider2D collider)
+    {
+        if (collider.gameObject.CompareTag("Cherry"))
+        {
+            fruitPop.Play();
+            Destroy(collider.gameObject);
+            Point += 100;
+        }
+        if (collider.gameObject.CompareTag("Apple"))
+        {
+            fruitPop.Play();
+            Destroy(collider.gameObject);
+            Point += 200;
+        }
+        if (collider.gameObject.CompareTag("Banana"))
+        {
+            fruitPop.Play();
+            Destroy(collider.gameObject);
+            Point += 300;
+        }
+    }
+
+* trừ máu khi chạm vào quái
+
+private void BeAttaked(Collider2D collider)
+    {
+        if (collider.gameObject.CompareTag("Left") || collider.gameObject.CompareTag("Right"))
+        {
+            Health -= 10;
+            if(Health <= 0){
+                Health = 0;
+            }
+        }
+    }
+
+* nhận điểm khi giết quái
+
+private void AttackSlime(Collider2D collider){
+        if(collider.gameObject.CompareTag("Top")){
+            var slime = collider.gameObject.GetComponentInParent<SlimeScript>();
+            slime.SetDieTrigger();
+            Point += 500;
+        }
+    }
